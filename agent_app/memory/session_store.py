@@ -33,6 +33,16 @@ class JsonSessionStore:
             encoding="utf-8",
         )
 
+    def list_session_ids(self) -> list[str]:
+        return sorted(path.stem for path in self._base_dir.glob("*.json"))
+
+    def delete(self, session_id: str) -> bool:
+        path = self._path_for(session_id)
+        if not path.exists():
+            return False
+        path.unlink()
+        return True
+
     def _path_for(self, session_id: str) -> Path:
         safe_session_id = session_id.replace("/", "_").replace("\\", "_")
         return self._base_dir / f"{safe_session_id}.json"

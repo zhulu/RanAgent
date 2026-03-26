@@ -79,6 +79,9 @@ class Settings:
     session_store_dir: Path
     workspace_root: Path
     skills_dir: Path
+    memory_db_path: Path
+    max_tool_result_chars: int
+    max_memory_context_hits: int
 
     def resolve_model_config(self) -> ModelConfig:
         return resolve_model_config(
@@ -112,6 +115,11 @@ def get_settings(
         ),
         workspace_root=Path(os.getenv("AGENT_WORKSPACE_ROOT", Path.cwd())),
         skills_dir=Path(os.getenv("AGENT_SKILLS_DIR", "skills")),
+        memory_db_path=Path(
+            os.getenv("AGENT_MEMORY_DB_PATH", ".agent_state/memory/memory.db")
+        ),
+        max_tool_result_chars=int(os.getenv("AGENT_MAX_TOOL_RESULT_CHARS", "4000")),
+        max_memory_context_hits=int(os.getenv("AGENT_MAX_MEMORY_CONTEXT_HITS", "3")),
     )
 
 
@@ -148,7 +156,9 @@ def resolve_model_config(
             or preset.model_name
         ),
         api_key=api_key_override or _first_env_value(preset.api_key_env),
-        base_url=base_url_override or _first_env_value(preset.base_url_env) or preset.base_url,
+        base_url=(
+            base_url_override or _first_env_value(preset.base_url_env) or preset.base_url
+        ),
         api_key_sources=preset.api_key_env,
     )
 

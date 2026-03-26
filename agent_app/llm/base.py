@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Any, Protocol
 
 from agent_app.core.messages import Message
 
@@ -10,6 +10,8 @@ from agent_app.core.messages import Message
 class ToolSpec:
     name: str
     description: str
+    input_schema: dict[str, Any] | None = None
+    example_input: str | None = None
 
 
 @dataclass(slots=True)

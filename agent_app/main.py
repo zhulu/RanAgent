@@ -6,14 +6,18 @@ from agent_app.config import Settings, get_settings
 from agent_app.core.agent import Agent
 from agent_app.llm.factory import build_llm_backend
 from agent_app.memory.session_store import JsonSessionStore
+from agent_app.memory.sqlite_store import SqliteMemoryStore
 from agent_app.skills.registry import SkillRegistry
 from agent_app.tools.calculator import CalculatorTool
 from agent_app.tools.document_readers import ReadPdfTool, ReadWordTool, ReadXlsxTool
 from agent_app.tools.filesystem import (
+    ListDirTool,
     MoveFileTool,
     ReadFileTool,
     RemoveFileTool,
     RenameFileTool,
+    SearchInFilesTool,
+    StatFileTool,
     WriteFileTool,
 )
 from agent_app.tools.registry import ToolRegistry
@@ -29,6 +33,9 @@ def build_tool_registry(settings: Settings) -> ToolRegistry:
     registry.register(RenameFileTool(settings.workspace_root))
     registry.register(MoveFileTool(settings.workspace_root))
     registry.register(RemoveFileTool(settings.workspace_root))
+    registry.register(ListDirTool(settings.workspace_root))
+    registry.register(SearchInFilesTool(settings.workspace_root))
+    registry.register(StatFileTool(settings.workspace_root))
     registry.register(ReadPdfTool(settings.workspace_root))
     registry.register(ReadXlsxTool(settings.workspace_root))
     registry.register(ReadWordTool(settings.workspace_root))
@@ -37,6 +44,10 @@ def build_tool_registry(settings: Settings) -> ToolRegistry:
 
 def build_skill_registry(settings: Settings) -> SkillRegistry:
     return SkillRegistry.from_directory(settings.skills_dir)
+
+
+def build_memory_store(settings: Settings) -> SqliteMemoryStore:
+    return SqliteMemoryStore(settings.memory_db_path)
 
 
 def build_agent(settings: Settings | None = None) -> Agent:
@@ -48,7 +59,10 @@ def build_agent(settings: Settings | None = None) -> Agent:
         tool_registry=build_tool_registry(settings),
         session_store=session_store,
         skill_registry=build_skill_registry(settings),
+        memory_store=build_memory_store(settings),
         max_tool_iterations=settings.max_tool_iterations,
+        max_tool_result_chars=settings.max_tool_result_chars,
+        max_memory_context_hits=settings.max_memory_context_hits,
     )
 
 

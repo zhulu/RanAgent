@@ -30,7 +30,6 @@ class OpenAICompatibleLLM:
 
         self._client = OpenAI(**client_kwargs)
         self._model_name = model_name
-        self._base_url = base_url
 
     @classmethod
     def from_model_config(cls, model_config: ModelConfig) -> "OpenAICompatibleLLM":
@@ -42,13 +41,16 @@ class OpenAICompatibleLLM:
         )
 
     def decide(self, messages: list[Message], tools: list[ToolSpec]) -> LLMDecision:
-        tool_lines = "\n".join(f"- {tool.name}: {tool.description}" for tool in tools)
+        tool_lines = "\n".join(
+            self._format_tool_spec(tool)
+            for tool in tools
+        )
         system_prompt = (
             "你是一个 Agent Planner。"
             "你只能输出 JSON，不要输出任何额外文本。"
             '如果需要调用工具，输出 {"action":"tool","tool_name":"...","tool_input":"..."}。'
             '如果可以直接回复，输出 {"action":"respond","content":"..."}。'
-            "对于需要多个字段的工具入参，请把 tool_input 写成 JSON 字符串。"
+            "如果工具有多个字段入参，请把 tool_input 写成 JSON 字符串。"
             "可用工具如下：\n"
             f"{tool_lines}"
         )
@@ -72,3 +74,12 @@ class OpenAICompatibleLLM:
             tool_name=data.get("tool_name"),
             tool_input=data.get("tool_input"),
         )
+
+    @staticmethod
+    def _format_tool_spec(tool: ToolSpec) -> str:
+        lines = [f"- {tool.name}: {tool.description}"]
+        if tool.input_schema:
+            lines.append(f"  schema: {json.dumps(tool.input_schema, ensure_ascii=False)}")
+        if tool.example_input is not None:
+            lines.append(f"  example_input: {tool.example_input}")
+        return "\n".join(lines)

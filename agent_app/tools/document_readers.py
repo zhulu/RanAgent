@@ -9,13 +9,15 @@ from agent_app.tools.filesystem import WorkspacePathMixin
 class ReadPdfTool(WorkspacePathMixin):
     name = "read_pdf"
     description = '读取 PDF 文本内容，入参示例 {"path":"docs/report.pdf"}'
+    input_schema = {"path": "string, .pdf file path under workspace"}
+    example_input = '{"path":"docs/report.pdf"}'
 
     def run(self, tool_input: str) -> ToolResult:
         try:
             from pypdf import PdfReader
 
             payload = self._load_payload(tool_input)
-            path = self._resolve_path(payload["path"], must_exist=True)
+            path = self._resolve_path(str(payload["path"]), must_exist=True)
             if path.suffix.lower() != ".pdf":
                 raise ValueError("read_pdf 仅支持 .pdf 文件")
 
@@ -38,6 +40,11 @@ class ReadXlsxTool(WorkspacePathMixin):
     description = (
         '读取 Excel 内容，入参示例 {"path":"data/demo.xlsx","sheet_name":"Sheet1"}'
     )
+    input_schema = {
+        "path": "string, .xlsx file path under workspace",
+        "sheet_name": "string, optional worksheet name",
+    }
+    example_input = '{"path":"data/demo.xlsx","sheet_name":"Sheet1"}'
 
     def run(self, tool_input: str) -> ToolResult:
         workbook = None
@@ -45,11 +52,11 @@ class ReadXlsxTool(WorkspacePathMixin):
             from openpyxl import load_workbook
 
             payload = self._load_payload(tool_input)
-            path = self._resolve_path(payload["path"], must_exist=True)
+            path = self._resolve_path(str(payload["path"]), must_exist=True)
             if path.suffix.lower() != ".xlsx":
                 raise ValueError("read_xlsx 仅支持 .xlsx 文件")
 
-            sheet_name = payload.get("sheet_name")
+            sheet_name = str(payload["sheet_name"]) if "sheet_name" in payload else None
             workbook = load_workbook(filename=str(path), read_only=True, data_only=True)
             worksheets = [workbook[sheet_name]] if sheet_name else list(workbook.worksheets)
 
@@ -76,13 +83,15 @@ class ReadXlsxTool(WorkspacePathMixin):
 class ReadWordTool(WorkspacePathMixin):
     name = "read_word"
     description = '读取 Word 内容，入参示例 {"path":"docs/notes.docx"}'
+    input_schema = {"path": "string, .docx file path under workspace"}
+    example_input = '{"path":"docs/notes.docx"}'
 
     def run(self, tool_input: str) -> ToolResult:
         try:
             from docx import Document
 
             payload = self._load_payload(tool_input)
-            path = self._resolve_path(payload["path"], must_exist=True)
+            path = self._resolve_path(str(payload["path"]), must_exist=True)
             suffix = path.suffix.lower()
             if suffix == ".doc":
                 raise ValueError("read_word 目前仅支持 .docx，不支持旧版 .doc")

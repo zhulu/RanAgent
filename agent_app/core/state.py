@@ -10,5 +10,7 @@ class SessionState:
     session_id: str
     messages: list[Message] = field(default_factory=list)
 
-    def add(self, role: str, content: str, name: str | None = None) -> None:
-        self.messages.append(Message(role=role, content=content, name=name))
+    def add(self, role: str, content: str, name: str | None = None) -> Message:
+        message = Message(role=role, content=content, name=name)
+        self.messages.append(message)
+        return message

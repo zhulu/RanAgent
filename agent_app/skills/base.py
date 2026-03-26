@@ -18,7 +18,7 @@ class Skill:
             f"Skill Description: {self.description or 'No description provided.'}",
         ]
         if self.allowed_tools:
-            lines.append(f"Skill Tools: {', '.join(self.allowed_tools)}")
+            lines.append(f"Skill Allowed Tools: {', '.join(self.allowed_tools)}")
         lines.append("Skill Prompt:")
         lines.append(self.prompt.strip() or "No additional prompt provided.")
         return "\n".join(lines)

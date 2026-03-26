@@ -38,3 +38,14 @@ class SkillRegistry:
                 raise KeyError(f"Skill not found: {name}. Available skills: {available}")
             resolved.append(self._by_name[name])
         return resolved
+
+    def allowed_tools_for(self, names: list[str]) -> set[str] | None:
+        resolved = self.resolve(names)
+        allowed_groups = [set(skill.allowed_tools) for skill in resolved if skill.allowed_tools]
+        if not allowed_groups:
+            return None
+
+        allowed: set[str] = set()
+        for group in allowed_groups:
+            allowed.update(group)
+        return allowed

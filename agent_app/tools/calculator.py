@@ -9,6 +9,8 @@ from agent_app.tools.base import ToolResult
 class CalculatorTool:
     name = "calculator"
     description = "执行基础四则运算，例如 2 * (3 + 4)"
+    input_schema = {"expression": "string, arithmetic expression using numbers and + - * / ()"}
+    example_input = "2 * (3 + 4)"
 
     _operators = {
         ast.Add: operator.add,
